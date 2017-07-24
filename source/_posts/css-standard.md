@@ -221,7 +221,7 @@ footer {
 
 为什么这是一个不好的实践：
 
-- 第一个方面是解耦，重写不应该依赖于 `g-swiper` 这个类名；如果需求上这里要改成垂直滚动，我们除了新增一个垂直滚动的组件类 `g-swiper-vertical`，并替换掉之前的类名之外，还需要去修改重写样式的类名。
+- 第一个方面是解耦，重写不应该依赖于 `g-swiper` 这个类名；如果需求上这里要改成垂直滚动，我们除了新增一个垂直滚动的组件类 `g-swiper-vertical`，并替换掉之前的类名之外，还需要去修改重写样式的类名（.home .g-swiper）。
 
 - 第二个方面是阅读和调试性，通过查看浏览器控制台或者查看 html 文件不能够直观的看出重写。
 
@@ -253,7 +253,47 @@ footer {
 公共样式只是抽象出一部分相似的样式，所以在完善UI细节的时候，规则上 **扩展** 和 **重写** 一样，也使用 `ex-` 前缀，同时不需要为取新名字费神。
 
 
-### 4. CSS命名
+### 4. 防止命名冲突
+
+如果是普通 jQuery 项目，请在 <body> 标签上添加上以 `vi-` 前缀开头的独立类名，例如 `vi-home`，vi 代表着 view;
+
+如果是 ionic 项目，请在最外层 `<ion-view>` 标签上添加上以 `vi-` 前缀开头的独立类名。
+
+ ```
+    <ion-view view-title="首页" class="vi-home">
+ ```
+
+`vi-home` 的作用是用来划分 css 样式作用域
+
+```scss
+// home 模块
+.vi-home {
+
+    /*------------------------------------*\
+    #SECTION-module1
+    \*------------------------------------*/
+    .module1 {
+        .container {
+
+        }
+    }
+
+
+
+
+
+    /*------------------------------------*\
+    #SECTION-module2
+    \*------------------------------------*/
+    .module2 {
+        .container {
+
+        }
+    }
+}
+```
+
+### 5. 私有样式 CSS 命名方法
 CSS 命名规则推荐BEM命名规则的设计思想，即 block + element + modifier。
 
 - block 代表这个 UI 块是什么，header，nav，infoCard，menu，button 等。
@@ -274,7 +314,7 @@ CSS 命名规则推荐BEM命名规则的设计思想，即 block + element + mod
 
 **block + element + modifier:** `.input-group-addon` `.form-control-static`
 
-> 同理在自定义全局样式也应该遵守这样的规则，同时在前面加上 `g-`。 `Bootstrap` 的源码非常的优秀，十分推荐前端开发者阅读。
+> 同理在自定义全局样式也应该遵守这样的规则，同时在前面加上 `g-`。 `Bootstrap` 的源码非常的优秀，十分推荐大家去阅读。
 
 
 
@@ -287,7 +327,10 @@ CSS 命名规则推荐BEM命名规则的设计思想，即 block + element + mod
 
 ```scss
 // extend.scss
-<!-- home & product component common banner -->
+
+/* home & product view common banner，
+ * 标识 home 和 product 两个视图共用一个 banner
+*/
 
 %banner {
     ...
@@ -329,7 +372,9 @@ CSS 命名规则推荐BEM命名规则的设计思想，即 block + element + mod
 
     .banner {
         @extend %banner;	
+
         // overwrite 在下方重写继承的样式
+        ...
         ...
     }
 }
@@ -338,125 +383,72 @@ CSS 命名规则推荐BEM命名规则的设计思想，即 block + element + mod
 
 如果要求所有的 banner 图都做修改，直接修改 `extend.scss`即可，所以在 UI 改版的时候，需要过一遍需求，慎重修改。
 
-##JavaScript 钩子
+## JavaScript 钩子
 如果 JavaScript 中涉及到了 class id，那么请为这些 name 添加一个`js-`前缀来申明这个 class id 是供给 JS 来使用的，这样可以区分，哪些是样式，哪些是逻辑。
 
 ```html
 <div class="js-date-content date-content"></div>
 
-$('.js-date-content').text('这个类名是给 JS 来使用的');
+$('.js-date-content').text('.js-date-conten 这个类名是给 JS 来使用的');
 ```
 
-##增强 HTML 可阅读性
-通过使用有意义的空白符来贼强 HTML 的可读性。在html中 1个空白符代表逗号，2个空白符代表句号，5个空白符代表段落。5个空白符推荐在最外层嵌套的大块之间使用，2个空白符推荐在大块嵌套中使用，第3层嵌套之后都使用1个空白符来分隔，因为 html 是嵌套层级，所以尽量不要嵌套太深的标签。
+## 增强 HTML 可阅读性
+通过使用有意义的空白符来贼强 HTML 的可读性。在html中 1个空行代表逗号，2个空行代表句号，5个空行代表段落。5个空行推荐在最外层嵌套的大块之间使用，如果嵌套太深推荐在第二层嵌套中使用2个空行，否则使用1个空行。第3层嵌套之后都使用1个空行来分隔。同时和 sass 一样，为最外层的模块添加注释。
+注意：最深的层级之间不需要空行，如果子节点只有一个标签，即无兄弟标签，也不需要空行，看如下示例
 
 
 ```html
+<!-- header module  -->
 <header class="page-head">
     <nav>
     	...
     </nav>
 
-
     <div class="page-logo">
     	...
     </div>
-    
-    
+        
     <div class="page-menu">
 	    ...
     </div>
-    
-    
+
 </header>
 
 
 
 
 
+<!-- body module -->
 <main class="page-content">
-  ...
+    <!-- swiper  -->
+    <div class="g-swiper">
+        <ul class="g-swiper-container">
+            <li class="g-swiper-item"></li>
+            <li class="g-swiper-item"></li>
+        <ul>
+    </div>
+
+
+    <!-- list-card  -->
+    <div class="list-card">
+        <ul class="list-card-container">
+            <li class="list-card-item"></li>
+            <li class="list-card-item"></li>
+        <ul>
+    </div>
+
 </main>
 
 
 
 
 
+<!-- footer module  -->
 <footer class="page-foot">
   ...
 </footer>
 ```
 
-再来个例子，普通书写格式：
-
-
-```html
-<ul class="primary-nav">
-    <li class="primary-nav__item">
-        <a href="/" class="primary-nav__link">Home</a>
-    </li>
-    <li class="primary-nav__item  primary-nav__trigger">
-        <a href="/about" class="primary-nav__link">About</a>
-        <ul class="primary-nav__sub-nav">
-            <li><a href="/about/products">Products</a></li>
-            <li><a href="/about/company">Company</a></li>
-        </ul>
-    </li>
-    <li class="primary-nav__item">
-        <a href="/contact" class="primary-nav__link">Contact</a>
-    </li>
-</ul>
-```
-
-遵循书写规范后：
-
-```html
-<ul class="primary-nav">
-
-    <li class="primary-nav__item">
-        <a href="/" class="primary-nav__link">Home</a>
-    </li>
-
-    <li class="primary-nav__item  primary-nav__trigger">
-        <a href="/about" class="primary-nav__link">About</a>
-
-        <ul class="primary-nav__sub-nav">
-            <li><a href="/about/products">Products</a></li>
-            <li><a href="/about/company">Company</a></li>
-        </ul>
-
-    </li>
-
-    <li class="primary-nav__item">
-        <a href="/contact" class="primary-nav__link">Contact</a>
-    </li>
-
-</ul>
-```
-
-加上空格后看起来会比之前更清晰一些，这样的空行规则其实很简单，看如下代码注释：
-
-```html
-<ul class="primary-nav">
-    <li class="primary-nav__item">
-        <a href="/" class="primary-nav__link">Home</a>
-    </li><!-- 下面的换行符相当于逗号 -->
-    
-    <li class="primary-nav__item  primary-nav__trigger">
-        <a href="/about" class="primary-nav__link">About</a><!-- 下面的换行符相当于逗号 -->
-
-        <ul class="primary-nav__sub-nav">
-            <li><a href="/about/products">Products</a></li>
-            <li><a href="/about/company">Company</a></li>
-        </ul><!-- 下面的换行符相当于逗号 -->
-
-    </li><!-- 下面的换行符相当于逗号 -->
-
-    <li class="primary-nav__item">
-        <a href="/contact" class="primary-nav__link">Contact</a>
-    </li><!-- 下面的换行符相当于逗号 -->
-
-</ul>
-```
+具体怎样使用空白符，请看个人视觉效果，调整到代码看起来清晰整洁即可。
 
 H5新增的标签其实也是增强语义化，增加可读性，通过空行的方式让 html 的书写仿佛像写文章一样，层级结构分明，也是遵循 H5 的规范之一。
